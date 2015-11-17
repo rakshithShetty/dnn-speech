@@ -2,7 +2,7 @@ import time
 import numpy as np
 import theano
 import theano.tensor as tensor
-from imagernn.utils import numpy_floatX
+from utils import numpy_floatX
 
 class Solver:
   """

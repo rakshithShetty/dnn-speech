@@ -4,8 +4,8 @@ import argparse
 import json
 from utils.solver import Solver 
 from utils.dataprovider import DataProvider
-from mlpmodel import mlpClassifier
-from rnnmodel import rnnClassifier
+#from mlpmodel import mlpClassifier
+#from rnnmodel import rnnClassifier
 
 def getModelObj(params):
   if params['model_type'] == 'MLP':
@@ -59,6 +59,8 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
 
   # IO specs
+  parser.add_argument('-d','--dataset', dest='dataset', type=str, default='mvNorm', help='Which file should we use for read the MFCC features')
+  parser.add_argument('--dataset_desc', dest='dataDesc', type=str, default='dataset.json', help='Which file should we use for read the MFCC features')
   parser.add_argument('--feature_file', dest='feature_file', type=str, default='data/default_feats.p', help='Which file should we use for read the MFCC features')
   parser.add_argument('--output_file_append', dest='out_file_append', type=str, default='dummyModel', help='String to append to the filename of the trained model')
   
@@ -83,4 +85,4 @@ if __name__ == "__main__":
   args = parser.parse_args()
   params = vars(args) # convert to ordinary dict
 
-  main(params)
+  #main(params)
