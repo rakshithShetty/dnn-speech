@@ -59,8 +59,8 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
 
   # IO specs
-  parse.add_argument('--feature_file', dest='feature_file', type=str, default='data/default_feats.p', help='Which file should we use for read the MFCC features')
-  parse.add_argument('--output_file_append', dest='out_file_append', type=str, default='dummyModel', help='String to append to the filename of the trained model')
+  parser.add_argument('--feature_file', dest='feature_file', type=str, default='data/default_feats.p', help='Which file should we use for read the MFCC features')
+  parser.add_argument('--output_file_append', dest='out_file_append', type=str, default='dummyModel', help='String to append to the filename of the trained model')
   
   # Learning related parmeters
   parser.add_argument('-m', '--max_epochs', dest='max_epochs', type=int, default=10, help='number of epochs to train for')
@@ -75,7 +75,7 @@ if __name__ == "__main__":
   
   
   # Model architecture related parameters
-  parse.add_argument('--model_type', dest='model_type', type=str, default='MLP', help='Can take values MLP, RNN or LSTM')
+  parser.add_argument('--model_type', dest='model_type', type=str, default='MLP', help='Can take values MLP, RNN or LSTM')
   parser.add_argument('--use_dropout', dest='use_dropout', type=int, default=1, help='enable or disable dropout')
   parser.add_argument('--drop_prob_encoder', dest='drop_prob_encoder', type=float, default=0.5, help='what dropout to apply right after the encoder to an RNN/LSTM')
 
