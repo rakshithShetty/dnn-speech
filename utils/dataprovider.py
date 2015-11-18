@@ -13,6 +13,9 @@ class DataProvider:
       self.data[splt] = {}
       self.data[splt]['feat'],self.data[splt]['lab'] = self.load_data(self.dataDesc[splt+'_x'], self.dataDesc[splt+'_y'])
 
+    self.feat_size = self.data['train']['feat'].shape[-1]
+    self.phone_vocab = len(self.dataDesc['ph2bin'].keys())
+
   def getBatch(self, batch_size):
     return []*batch_size
 
@@ -20,7 +23,7 @@ class DataProvider:
     return []
 
   def getSplitSize(self, split='train'):
-    return 0
+    return self.data[split]['feat'].shape[0] 
 
   def load_data(self, input_file_list, output_file_list, in_dim=39, out_dim=24, shufdata = 1):
       """
@@ -37,7 +40,7 @@ class DataProvider:
               output_data = out_data
       input_data.resize(len(input_data)/in_dim, in_dim)
       output_data.resize(len(output_data)/out_dim, out_dim)
-      shfidx = np.random.shuffle(np.arange(input_data.shape[0])) if shufdata == 1 else np.arange(input_data.shape[0])
+      shfidx = np.random.permutation(input_data.shape[0]) if shufdata == 1 else np.arange(input_data.shape[0])
       input_data = input_data[shfidx,:]
       output_data = output_data[shfidx,:]
   

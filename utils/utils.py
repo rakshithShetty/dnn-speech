@@ -109,6 +109,10 @@ def myMaxPool(x, ps=[],method='downsamp'):
         y = tensor.max(x, axis=3).max(axis=2)
     return(y)
 
+def make_shared(data_set, data_name):
+    data_set_th = theano.shared(np.asarray(data_set, dtype=config.floatX), name=data_name, borrow=True)
+    return data_set_th
+
   
 def basic_lstm_layer(tparams, state_below, aux_input, use_noise, options, prefix='lstm', sched_prob_mask = []):
   nsteps = state_below.shape[0]
