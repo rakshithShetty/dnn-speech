@@ -5,6 +5,17 @@ from theano import config
 import theano.tensor as tensor
 from theano.tensor.signal import downsample
 from collections import OrderedDict, defaultdict
+from mlpmodel.mlpClassifier import MlpClassifier
+#from rnnmodel import rnnClassifier
+
+def getModelObj(params):
+  if params['model_type'] == 'MLP':
+    mdl = MlpClassifier(params) 
+  elif params['model_type'] == 'RNN':  
+    mdl = rnnClassifier(params) 
+  else:
+    raise ValueError('ERROR: %s --> This model type is not yet supported'%(params['model_type']))
+  return mdl
 
 def randi(N):
   """ get random integer in range [0, N) """

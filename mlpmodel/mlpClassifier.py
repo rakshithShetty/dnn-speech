@@ -9,7 +9,10 @@ from os import path
 class MlpClassifier:
   def __init__(self, params):
     self.model = Sequential()
-
+    print('----------Using MLP model with the below configuration----------') 
+    print('nLayers:%d'%(len(params['hidden_layers'])))
+    print('Layer sizes: [%s]'%(' '.join(map(str,params['hidden_layers']))))
+    print('Dropout Prob: %.2f '%(params['drop_prob_encoder']))
 
   def build_model(self, params):
     hidden_layers = params['hidden_layers']

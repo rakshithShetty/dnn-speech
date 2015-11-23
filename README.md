@@ -9,3 +9,4 @@ Data is put in the data/ folder
 First you need to preprocess the data using preproc script. Extract the .gz data file into a folder 'SRC' in 'data/' folder and provide the 
 'SRC' name and a dest folder name (again will be within data/) as input to the preproc script 
 
+evalModel.py  --> use to evaluate accuracy on any data split using the saved model

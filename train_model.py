@@ -5,17 +5,7 @@ import json
 import os
 from utils.solver import Solver 
 from utils.dataprovider import DataProvider
-from mlpmodel.mlpClassifier import MlpClassifier
-#from rnnmodel import rnnClassifier
-
-def getModelObj(params):
-  if params['model_type'] == 'MLP':
-    mdl = MlpClassifier(params) 
-  elif params['model_type'] == 'RNN':  
-    mdl = rnnClassifier(params) 
-  else:
-    raise ValueError('ERROR: %s --> This model type is not yet supported'%(params['model_type']))
-  return mdl
+from utils.utils import getModelObj
 
 def main(params):
   
@@ -24,20 +14,24 @@ def main(params):
   batch_size = params['batch_size']
   max_epochs = params['max_epochs']
   
-  params['hidden_layers'] = [100, 100, 100, 100]
+  
   # fetch the data provider object
   dp = DataProvider(params)
   params['feat_size'] = dp.feat_size
   params['phone_vocab_size'] = dp.phone_vocab
-
   # Get the solver object, optional not needed for kerras
   # solver = Solver(params['solver'])
-  
   ## Add the model intiailization code here
+  
   modelObj = getModelObj(params)
 
   # Build the model Architecture
   f_train = modelObj.build_model(params)
+  
+  if params['saved_model'] !=None: 
+    cv = json.load(open(params['saved_model'],'r'))
+    modelObj.model.load_weights(cv['weights_file'])
+    print 'Conitnuing training from model %s'%(params['saved_model'])
   
   fname, best_val_loss = modelObj.train_model(dp.data['train']['feat'], dp.data['train']['lab'], 
                        dp.data['devel']['feat'], dp.data['devel']['lab'], params)
@@ -45,7 +39,7 @@ def main(params):
   checkpoint = {}
 
   checkpoint['params'] = params
-  checkpoint['weights_file'] = os.path.join(params['out_dir'],fname.format(val_loss=best_val_loss))
+  checkpoint['weights_file'] = fname.format(val_loss=best_val_loss)
   filename = 'model_%s_%s_%s_%.2f.json' % (params['dataset'], params['model_type'], params['out_file_append'], best_val_loss)
   filename = os.path.join(params['out_dir'],filename)
   print 'Saving to File %s'%(filename)
@@ -100,6 +94,9 @@ if __name__ == "__main__":
   parser.add_argument('--model_type', dest='model_type', type=str, default='MLP', help='Can take values MLP, RNN or LSTM')
   parser.add_argument('--use_dropout', dest='use_dropout', type=int, default=1, help='enable or disable dropout')
   parser.add_argument('--drop_prob_encoder', dest='drop_prob_encoder', type=float, default=0.0, help='what dropout to apply right after the encoder to an RNN/LSTM')
+  parser.add_argument('--hidden_layers', dest='hidden_layers', nargs='+',type=int, default=[100, 100, 100, 100], help='the hidden layer configuration, for applicable to MLP')
+  
+  parser.add_argument('--continue_training', dest='saved_model', type=str, default=None, help='input the saved model json file to evluate on')
 
 
   args = parser.parse_args()
