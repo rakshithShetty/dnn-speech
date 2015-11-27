@@ -1,4 +1,4 @@
-This ist the repository for the term project Speech Recognition using Deep Neural Networks for the course ELEC-E5510-Speech Recognition
+This is the repository for the course project of the ELEC-E5510-Speech Recognition. The project title is "Deep Neural Networks for Acoustic Modelling".
 
 Source code is in python and uses theano library.
 Easiest way to get the environment setup on windows is to install anaconda (free for students) and then install theano.

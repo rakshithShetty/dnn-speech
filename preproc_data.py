@@ -4,7 +4,7 @@ import numpy as np
 import theano
 import json
 import argparse
-
+from windowing import sliding_window
 
 def read_file_list(files_name):
   """
@@ -19,6 +19,7 @@ def read_file_list(files_name):
       files_list.append(line)
   fid.close()
   return files_list
+
 
 def extract_file_id_list(files_list):
   """
@@ -43,6 +44,7 @@ def prepare_file_path_list(files_id_list, files_dir, files_extension,
 
   return  files_name_list
 
+
 def phoneme_binary(phoneme_list):
   n = len(phoneme_list)
   binary = ['0']*n
@@ -54,6 +56,7 @@ def phoneme_binary(phoneme_list):
       binary[i] = '0'
 
   return phoneme_bin
+
 
 def lab2binary(in_file_list, ph_bin, out_file_list):
   """
@@ -67,6 +70,24 @@ def lab2binary(in_file_list, ph_bin, out_file_list):
       with open(out_file_list[i], 'w') as outlab:
           outlab.write('\n'.join(b_label))
 
+
+def make_context_frames(in_file_list, out_file_list, n_frames=3, mfcc_dim=39):
+  """
+  this function makes the input frames into context dependent
+  """
+  win_length = n_frames*mfcc_dim
+  shift_length = mfcc_dim
+  temp = np.zeros(((n_frames-1)*mfcc_dim))
+
+  for i in xrange(len(in_file_list)):
+      data = np.fromfile(in_file_list[i], dtype=np.float32, sep=' ', count=-1)
+      # append zeros in the beginning
+      data = np.hstack((temp, data))
+      new_data = sliding_window(data, win_length, shift_length,flatten=False)
+      
+      np.savetxt(out_file_list[i], new_data, fmt='%.6f', delimiter=' ')
+
+
 def MVN_normalize(in_file_list, mfcc_dim, out_file_list):
   """
   mean and variance normalization
@@ -79,6 +100,7 @@ def MVN_normalize(in_file_list, mfcc_dim, out_file_list):
       data = (data - np.tile(data_mean, (data.shape[0],1)))/np.tile(data_std, (data.shape[0],1))
 
       np.savetxt(out_file_list[i], data, fmt='%.6f', delimiter=' ')
+
 
 def main(params):
   data_dir = params['data_dir']
@@ -111,16 +133,17 @@ def main(params):
                                           sp_srcDir, '.mfcc', False)
     norm_mfcc_file_list = prepare_file_path_list(files_id_list,
                                           sp_destDir, '.mfcc')
-                                          
+    window_mfcc_file_list = prepare_file_path_list(files_id_list, 
+                                           sp_destDir, '_context.mfcc')
     
     if splt ==  'train':
         ph_bin = phoneme_binary(list(phone_set))
     
-    lab2binary(labels_file_list, ph_bin, binary_labels_file_list)
-    MVN_normalize(mfcc_file_list, params['mfcc_dim'], norm_mfcc_file_list)
-
+    #lab2binary(labels_file_list, ph_bin, binary_labels_file_list)
+    #MVN_normalize(mfcc_file_list, params['mfcc_dim'], norm_mfcc_file_list)
+    #make_context_frames(mfcc_file_list, window_mfcc_file_list, n_frames=3, mfcc_dim=39)
     data_desc[splt+'_y'] = binary_labels_file_list
-    data_desc[splt+'_x'] = norm_mfcc_file_list 
+    data_desc[splt+'_x'] = window_mfcc_file_list
 
   data_desc['ph2bin'] = ph_bin 
   json.dump(data_desc, open(os.path.join(destDir,'dataset.json'),'w'))

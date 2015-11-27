@@ -77,6 +77,7 @@ if __name__ == "__main__":
   parser.add_argument('--output_file_append', dest='out_file_append', type=str, default='dummyModel', help='String to append to the filename of the trained model')
 
   parser.add_argument('--out_dir', dest='out_dir', type=str, default='cv/', help='String to append to the filename of the trained model')
+  parser.add_argument('--in_dim', dest='in_dim', type=int, default=39, help='Input dimension')
   
   # Learning related parmeters
   parser.add_argument('-m', '--max_epochs', dest='max_epochs', type=int, default=20, help='number of epochs to train for')
@@ -94,10 +95,9 @@ if __name__ == "__main__":
   parser.add_argument('--model_type', dest='model_type', type=str, default='MLP', help='Can take values MLP, RNN or LSTM')
   parser.add_argument('--use_dropout', dest='use_dropout', type=int, default=1, help='enable or disable dropout')
   parser.add_argument('--drop_prob_encoder', dest='drop_prob_encoder', type=float, default=0.0, help='what dropout to apply right after the encoder to an RNN/LSTM')
-  parser.add_argument('--hidden_layers', dest='hidden_layers', nargs='+',type=int, default=[100, 100, 100, 100], help='the hidden layer configuration, for applicable to MLP')
+  parser.add_argument('--hidden_layers', dest='hidden_layers', nargs='+',type=int, default=[300, 300], help='the hidden layer configuration, for applicable to MLP')
   
   parser.add_argument('--continue_training', dest='saved_model', type=str, default=None, help='input the saved model json file to evluate on')
-
 
   args = parser.parse_args()
   params = vars(args) # convert to ordinary dict
