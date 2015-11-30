@@ -33,8 +33,8 @@ def main(params):
     modelObj.model.load_weights(cv['weights_file'])
     print 'Conitnuing training from model %s'%(params['saved_model'])
   
-  fname, best_val_loss = modelObj.train_model(dp.data['train']['feat'], dp.data['train']['lab'], 
-                       dp.data['devel']['feat'], dp.data['devel']['lab'], params)
+  train_x, train_y, val_x, val_y = dp.get_data_array(params['model_type'], ['train', 'devel'], cntxt=params['context'])
+  fname, best_val_loss = modelObj.train_model(train_x, train_y, val_x, val_y, params)
 
   checkpoint = {}
 
@@ -96,6 +96,9 @@ if __name__ == "__main__":
   parser.add_argument('--use_dropout', dest='use_dropout', type=int, default=1, help='enable or disable dropout')
   parser.add_argument('--drop_prob_encoder', dest='drop_prob_encoder', type=float, default=0.0, help='what dropout to apply right after the encoder to an RNN/LSTM')
   parser.add_argument('--hidden_layers', dest='hidden_layers', nargs='+',type=int, default=[300, 300], help='the hidden layer configuration, for applicable to MLP')
+  
+  # RNN Model architecture related parameters
+  parser.add_argument('--context', dest='context', type=int, default=-1, help='context before current sample to feed to RNN')
   
   parser.add_argument('--continue_training', dest='saved_model', type=str, default=None, help='input the saved model json file to evluate on')
 

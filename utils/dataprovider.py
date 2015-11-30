@@ -13,7 +13,7 @@ class DataProvider:
       self.data[splt] = {}
       self.data[splt]['feat'],self.data[splt]['lab'] = self.load_data(self.dataDesc[splt+'_x'], self.dataDesc[splt+'_y'])
 
-    self.feat_size = self.data['train']['feat'].shape[-1]
+    self.feat_size = self.in_dim 
     self.phone_vocab = len(self.dataDesc['ph2bin'].keys())
 
   def getBatch(self, batch_size):
@@ -21,29 +21,55 @@ class DataProvider:
 
   def getBatchWithContext(self):
     return []
+  
+  def get_data_array(self, model, splits, cntxt=-1, shufdata=1):
+    output = []
+    if model == 'MLP':
+      for spt in splits:
+        feats = np.concatenate(self.data[spt]['feat'])
+        labs = np.concatenate(self.data[spt]['lab'])
+        shfidx = np.random.permutation(feats.shape[0]) if shufdata == 1 else np.arange(feats.shape[0])
+        feats = feats[shfidx,:]
+        labs = labs[shfidx,:]
+        output.extend([feats,labs])
+    elif model == 'RNN':
+      for spt in splits:
+        final_feats = [] 
+        for feat in self.data[spt]['feat']:
+            padFeat = np.concatenate([np.zeros((cntxt-1,self.feat_size)), feat])
+            idces = np.repeat(np.arange(cntxt-1,padFeat.shape[0]),cntxt) + np.tile(np.arange(-(cntxt-1),1),padFeat.shape[0]- cntxt +1)
+            cntxtDat = padFeat[idces,:].reshape(feat.shape[0], cntxt, self.feat_size)
+            final_feats.append(cntxtDat)
+        
+        feats = np.concatenate(final_feats)
+        labs = np.concatenate(self.data[spt]['lab'])
+        shfidx = np.random.permutation(feats.shape[0]) if shufdata == 1 else np.arange(feats.shape[0])
+        feats = feats[shfidx,:,:]
+        labs = labs[shfidx,:]
+        output.extend([feats,labs])
+        
+    return output
 
   def getSplitSize(self, split='train'):
     return self.data[split]['feat'].shape[0] 
+  
+  def getSplitSize(self, split='train'):
+    return self.data[split]['feat'].shape[0] 
 
-  def load_data(self, input_file_list, output_file_list, out_dim=24, shufdata = 1):
+  def load_data(self, input_file_list, output_file_list, out_dim=24, shufdata = 0):
       """
       load partiotion
       """
       in_dim = self.in_dim
+      input_data = []
+      output_data = []
       for i in xrange(len(input_file_list)):  
           in_data = np.fromfile(input_file_list[i],dtype=np.float32,sep=' ',count=-1)
           out_data = np.fromfile(output_file_list[i],dtype=np.float32,sep=' ',count=-1)
-          if i > 0:
-              input_data = np.concatenate((input_data,in_data))
-              output_data = np.concatenate((output_data, out_data))
-          else:
-              input_data = in_data
-              output_data = out_data
-      input_data.resize(len(input_data)/in_dim, in_dim)
-      output_data.resize(len(output_data)/out_dim, out_dim)
-      shfidx = np.random.permutation(input_data.shape[0]) if shufdata == 1 else np.arange(input_data.shape[0])
-      input_data = input_data[shfidx,:]
-      output_data = output_data[shfidx,:]
+          in_data.resize(len(in_data)/in_dim, in_dim)
+          out_data.resize(len(out_data)/out_dim, out_dim)
+          input_data.append(in_data)
+          output_data.append(out_data)
   
       return input_data, output_data
 

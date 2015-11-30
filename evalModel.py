@@ -37,8 +37,10 @@ def main(params):
     f_train = modelObj.build_model(cv_params)
     modelObj.model.load_weights(cv['weights_file'])
     
-    predOut = modelObj.model.predict_classes(dp.data[params['split']]['feat'], batch_size=100)
-    accuracy =  100.0*np.sum(predOut == dp.data[params['split']]['lab'].nonzero()[1]) / predOut.shape[0]
+    inpt_x, inpt_y = dp.get_data_array(cv_params['model_type'],[params['split']],cntxt = cv_params['context'])
+
+    predOut = modelObj.model.predict_classes(inpt_x, batch_size=100)
+    accuracy =  100.0*np.sum(predOut == inpt_y.nonzero()[1]) / predOut.shape[0]
     print('Accuracy of %s the %s set is %0.2f'%(params['saved_model'],params['split'],accuracy))
 
 if __name__ == "__main__":
