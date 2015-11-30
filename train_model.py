@@ -93,6 +93,7 @@ if __name__ == "__main__":
   
   # Model architecture related parameters
   parser.add_argument('--model_type', dest='model_type', type=str, default='MLP', help='Can take values MLP, RNN or LSTM')
+  parser.add_argument('--recurrent_type', dest='recurrent_type', type=str, default='simple', help='Can take values MLP, RNN or LSTM')
   parser.add_argument('--use_dropout', dest='use_dropout', type=int, default=1, help='enable or disable dropout')
   parser.add_argument('--drop_prob_encoder', dest='drop_prob_encoder', type=float, default=0.0, help='what dropout to apply right after the encoder to an RNN/LSTM')
   parser.add_argument('--hidden_layers', dest='hidden_layers', nargs='+',type=int, default=[300, 300], help='the hidden layer configuration, for applicable to MLP')

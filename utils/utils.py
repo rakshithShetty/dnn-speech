@@ -17,6 +17,7 @@ def getModelObj(params):
     raise ValueError('ERROR: %s --> This model type is not yet supported'%(params['model_type']))
   return mdl
 
+
 def randi(N):
   """ get random integer in range [0, N) """
   return int(uniform(0, N))
