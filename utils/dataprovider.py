@@ -32,6 +32,14 @@ class DataProvider:
         feats = feats[shfidx,:]
         labs = labs[shfidx,:]
         output.extend([feats,labs])
+    elif model == 'DBN':
+      for spt in splits:
+        feats = np.concatenate(self.data[spt]['feat'])
+        labs = np.concatenate(self.data[spt]['lab'])
+        shfidx = np.random.permutation(feats.shape[0]) if shufdata == 1 else np.arange(feats.shape[0])
+        feats = feats[shfidx,:]
+        labs = labs[shfidx,:]
+        output.extend([feats,labs])
     elif model == 'RNN':
       for spt in splits:
         final_feats = [] 

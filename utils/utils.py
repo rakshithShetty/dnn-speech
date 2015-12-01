@@ -7,10 +7,13 @@ from theano.tensor.signal import downsample
 from collections import OrderedDict, defaultdict
 from mlpmodel.mlpClassifier import MlpClassifier
 from rnnmodel.rnnClassifier import RnnClassifier
+from dbnmodel.DBN import DbnClassifier
 
 def getModelObj(params):
   if params['model_type'] == 'MLP':
     mdl = MlpClassifier(params) 
+  elif params['model_type'] == 'DBN':
+    mdl = DbnClassifier(params)
   elif params['model_type'] == 'RNN':  
     mdl = RnnClassifier(params) 
   else:

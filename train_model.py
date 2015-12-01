@@ -35,15 +35,15 @@ def main(params):
   
   train_x, train_y, val_x, val_y = dp.get_data_array(params['model_type'], ['train', 'devel'], cntxt=params['context'])
   fname, best_val_loss = modelObj.train_model(train_x, train_y, val_x, val_y, params)
+  if params['model_type']!='DBN':
+    checkpoint = {}
 
-  checkpoint = {}
-
-  checkpoint['params'] = params
-  checkpoint['weights_file'] = fname.format(val_loss=best_val_loss)
-  filename = 'model_%s_%s_%s_%.2f.json' % (params['dataset'], params['model_type'], params['out_file_append'], best_val_loss)
-  filename = os.path.join(params['out_dir'],filename)
-  print 'Saving to File %s'%(filename)
-  json.dump(checkpoint, open(filename,'w'))
+    checkpoint['params'] = params
+    checkpoint['weights_file'] = fname.format(val_loss=best_val_loss)
+    filename = 'model_%s_%s_%s_%.2f.json' % (params['dataset'], params['model_type'], params['out_file_append'], best_val_loss)
+    filename = os.path.join(params['out_dir'],filename)
+    print 'Saving to File %s'%(filename)
+    json.dump(checkpoint, open(filename,'w'))
 
   ## Now let's build a gradient computation graph and rmsprop update mechanism
   ##grads = tensor.grad(cost, wrt=model.values())
@@ -83,6 +83,8 @@ if __name__ == "__main__":
   parser.add_argument('-m', '--max_epochs', dest='max_epochs', type=int, default=20, help='number of epochs to train for')
   parser.add_argument('-l', '--learning_rate', dest='lr', type=float, default=1e-1, help='solver learning rate')
   parser.add_argument('-b', '--batch_size', dest='batch_size', type=int, default=100, help='batch size')
+  parser.add_argument('-pl', '--pre_learning_rate', dest='plr', type=float, default=1e-1, help='solver pre-learning rate')  
+  parser.add_argument('-pm', '--pre_max_epochs', dest='pre_max_epochs', type=int, default=20, help='number of epochs to pre-train for')
   
   # Solver related parameters
   parser.add_argument('--solver', dest='solver', type=str, default='sgd', help='solver types supported: rmsprop')
