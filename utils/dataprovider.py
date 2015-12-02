@@ -22,37 +22,26 @@ class DataProvider:
   def getBatchWithContext(self):
     return []
   
-  def get_data_array(self, model, splits, cntxt=-1, shufdata=1):
+  def get_data_array(self, model, splits, cntxt=-1, shufdata=1, idx = -1):
     output = []
-    if model == 'MLP':
-      for spt in splits:
-        feats = np.concatenate(self.data[spt]['feat'])
-        labs = np.concatenate(self.data[spt]['lab'])
-        shfidx = np.random.permutation(feats.shape[0]) if shufdata == 1 else np.arange(feats.shape[0])
-        feats = feats[shfidx,:]
-        labs = labs[shfidx,:]
-        output.extend([feats,labs])
-    elif model == 'DBN':
-      for spt in splits:
-        feats = np.concatenate(self.data[spt]['feat'])
-        labs = np.concatenate(self.data[spt]['lab'])
-        shfidx = np.random.permutation(feats.shape[0]) if shufdata == 1 else np.arange(feats.shape[0])
-        feats = feats[shfidx,:]
-        labs = labs[shfidx,:]
-        output.extend([feats,labs])
+
+    if model == 'MLP' or model == 'DBN':
+        final_feats = self.data[spt]['feat'] if idx == -1 else [self.data[spt]['feat'][idx]]
     elif model == 'RNN':
       for spt in splits:
+        inp_feats = self.data[spt]['feat'] if idx == -1 else [self.data[spt]['feat'][idx]]
         final_feats = [] 
-        for feat in self.data[spt]['feat']:
+        for feat in inp_feats:
             padFeat = np.concatenate([np.zeros((cntxt-1,self.feat_size)), feat])
             idces = np.repeat(np.arange(cntxt-1,padFeat.shape[0]),cntxt) + np.tile(np.arange(-(cntxt-1),1),padFeat.shape[0]- cntxt +1)
             cntxtDat = padFeat[idces,:].reshape(feat.shape[0], cntxt, self.feat_size)
             final_feats.append(cntxtDat)
         
         feats = np.concatenate(final_feats)
-        labs = np.concatenate(self.data[spt]['lab'])
+        labs = self.data[spt]['lab'] if idx == -1 else [self.data[spt]['lab'][idx]]
+        labs = np.concatenate(labs)
         shfidx = np.random.permutation(feats.shape[0]) if shufdata == 1 else np.arange(feats.shape[0])
-        feats = feats[shfidx,:,:]
+        feats = feats[shfidx,...]
         labs = labs[shfidx,:]
         output.extend([feats,labs])
         
