@@ -25,18 +25,18 @@ class DataProvider:
   def get_data_array(self, model, splits, cntxt=-1, shufdata=1, idx = -1):
     output = []
 
-    if model == 'MLP' or model == 'DBN':
-        final_feats = self.data[spt]['feat'] if idx == -1 else [self.data[spt]['feat'][idx]]
-    elif model == 'RNN':
-      for spt in splits:
-        inp_feats = self.data[spt]['feat'] if idx == -1 else [self.data[spt]['feat'][idx]]
-        final_feats = [] 
-        for feat in inp_feats:
-            padFeat = np.concatenate([np.zeros((cntxt-1,self.feat_size)), feat])
-            idces = np.repeat(np.arange(cntxt-1,padFeat.shape[0]),cntxt) + np.tile(np.arange(-(cntxt-1),1),padFeat.shape[0]- cntxt +1)
-            cntxtDat = padFeat[idces,:].reshape(feat.shape[0], cntxt, self.feat_size)
-            final_feats.append(cntxtDat)
-        
+    for spt in splits:
+        if model == 'MLP' or model == 'DBN':
+            final_feats = self.data[spt]['feat'] if idx == -1 else [self.data[spt]['feat'][idx]]
+        elif model == 'RNN':
+            inp_feats = self.data[spt]['feat'] if idx == -1 else [self.data[spt]['feat'][idx]]
+            final_feats = [] 
+            for feat in inp_feats:
+                padFeat = np.concatenate([np.zeros((cntxt-1,self.feat_size)), feat])
+                idces = np.repeat(np.arange(cntxt-1,padFeat.shape[0]),cntxt) + np.tile(np.arange(-(cntxt-1),1),padFeat.shape[0]- cntxt +1)
+                cntxtDat = padFeat[idces,:].reshape(feat.shape[0], cntxt, self.feat_size)
+                final_feats.append(cntxtDat)
+            
         feats = np.concatenate(final_feats)
         labs = self.data[spt]['lab'] if idx == -1 else [self.data[spt]['lab'][idx]]
         labs = np.concatenate(labs)
