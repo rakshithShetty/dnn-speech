@@ -48,9 +48,9 @@ def main(params):
     
     inpt_x, inpt_y = dp.get_data_array(cv_params['model_type'],[params['split']],cntxt = cv_params['context'])
 
-    #predOut = modelObj.model.predict_classes(inpt_x, batch_size=100)
-    #accuracy =  100.0*np.sum(predOut == inpt_y.nonzero()[1]) / predOut.shape[0]
-    #print('Accuracy of %s the %s set is %0.2f'%(params['saved_model'], params['split'],accuracy))
+    predOut = modelObj.model.predict_classes(inpt_x, batch_size=100)
+    accuracy =  100.0*np.sum(predOut == inpt_y.nonzero()[1]) / predOut.shape[0]
+    print('Accuracy of %s the %s set is %0.2f'%(params['saved_model'], params['split'],accuracy))
 
     if params['dump_lna_dir'] != None:
         spt = params['split']
@@ -61,13 +61,14 @@ def main(params):
         phones_targ = [l.strip() for l in codecs.open(params['lna_ph_order'], encoding='utf-8')]
         assert(set(phones_targ) == set(phoneList))
         shuffle_order = np.zeros(len(phones_targ),dtype=np.int32)
-        for i,ph in enumerate(phoneList):
-            shuffle_order[i] = phones_targ.index(ph)
+        for i,ph in enumerate(phones_targ):
+            shuffle_order[i] = phoneList.index(ph)
         ## Now for evert utterance sample predict probabilities and dump lna files
         for i,inp_file in enumerate(dp.dataDesc[spt+'_x']): 
             lna_file = os.path.join(params['dump_lna_dir'], os.path.basename(inp_file).split('.')[0]+'.lna')
-            inpt_x,_ = dp.get_data_array(cv_params['model_type'],[params['split']],cntxt = cv_params['context'], shufdata=0, idx = i)
+            inpt_x,inp_y = dp.get_data_array(cv_params['model_type'],[params['split']],cntxt = cv_params['context'], shufdata=0, idx = i)
             probs = modelObj.model.predict(inpt_x, batch_size=100)
+            #dump_lna(inp_y[:,shuffle_order].flatten(), lna_file, probs.shape[1])
             dump_lna(probs[:,shuffle_order].flatten(), lna_file, probs.shape[1])
             print lna_file
 
