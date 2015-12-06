@@ -9,6 +9,21 @@ import re
 import codecs
 import struct
 
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+
+
+def plot_confusion_matrix(cm,class_names, title='Confusion matrix', cmap=plt.cm.Blues):
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(class_names))
+    plt.xticks(tick_marks, class_names, rotation=45)
+    plt.yticks(tick_marks, class_names)
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+
 def dump_lna(probs, lna_file, n_phones=24):
     with open(lna_file, 'wb') as f:
         f.write(struct.pack(">I", n_phones))
@@ -52,12 +67,23 @@ def main(params):
     accuracy =  100.0*np.sum(predOut == inpt_y.nonzero()[1]) / predOut.shape[0]
     print('Accuracy of %s the %s set is %0.2f'%(params['saved_model'], params['split'],accuracy))
 
+
+    # Get the phone order
+    ph2bin = dp.dataDesc['ph2bin']
+    phoneList = ['']*len(ph2bin)
+    for ph in ph2bin:
+        phoneList[ph2bin[ph].split().index('1')] = ph
+
+    # plotting confusion matrix
+    if params['plot_confmat'] != 0:
+        cm = confusion_matrix(inpt_y.nonzero()[1], predOut) 
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        plt.figure()
+        plot_confusion_matrix(cm, phoneList)
+        plt.show()
+
     if params['dump_lna_dir'] != None:
         spt = params['split']
-        ph2bin = dp.dataDesc['ph2bin']
-        phoneList = ['']*len(ph2bin)
-        for ph in ph2bin:
-            phoneList[ph2bin[ph].split().index('1')] = ph
         phones_targ = [l.strip() for l in codecs.open(params['lna_ph_order'], encoding='utf-8')]
         assert(set(phones_targ) == set(phoneList))
         shuffle_order = np.zeros(len(phones_targ),dtype=np.int32)
@@ -86,6 +112,7 @@ if __name__ == "__main__":
   
   parser.add_argument('--dump_lna_dir', dest='dump_lna_dir', type=str, default=None, help='Should we dump lna files ?')
   parser.add_argument('--lna_ph_order', dest='lna_ph_order', type=str, default='list_monophones', help='Phone order to follow')
+  parser.add_argument('--plot_confmat', dest='plot_confmat', type=int, default=0, help='Should we plot the confusion matrix')
   
   # models list file
   parser.add_argument('--model_list', dest='model_list', type=str, default=None,\
