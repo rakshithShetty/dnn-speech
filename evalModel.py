@@ -8,6 +8,7 @@ from utils.utils import getModelObj
 import re
 import codecs
 import struct
+import cPickle
 
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
@@ -57,10 +58,13 @@ def main(params):
     
     
     # Get the model object and build the model Architecture
-    modelObj = getModelObj(cv_params)
-    f_train = modelObj.build_model(cv_params)
-    modelObj.model.load_weights(cv['weights_file'])
-    
+    if cv_params['model_type']!='DBN':
+        modelObj = getModelObj(cv_params)
+        f_train = modelObj.build_model(cv_params)
+        modelObj.model.load_weights(cv['weights_file'])
+    else:
+        modelObj = cPickle.load(open(cv['weights_file']))
+        
     inpt_x, inpt_y = dp.get_data_array(cv_params['model_type'],[params['split']],cntxt = cv_params['context'])
 
     predOut = modelObj.model.predict_classes(inpt_x, batch_size=100)

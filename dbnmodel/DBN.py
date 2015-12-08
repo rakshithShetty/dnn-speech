@@ -3,6 +3,7 @@
 import os
 import sys
 import timeit
+import cPickle
 
 import numpy
 
@@ -10,7 +11,8 @@ import theano
 import theano.tensor as T
 from theano.sandbox.rng_mrg import MRG_RandomStreams
 
-from logistic_sgd import LogisticRegression, load_data
+from logistic_sgd import LogisticRegression
+
 from mlp import HiddenLayer
 from rbm import RBM
 from os import path
@@ -127,8 +129,8 @@ class DBN(object):
         self.params.extend(self.logLayer.params)
 
         # compute the cost for second phase of training, defined as the
-        # negative log likelihood of the logistic regression (output) layer
-        self.finetune_cost = self.logLayer.negative_log_likelihood(self.y)
+        # categorical cross entropy of the logistic regression (output) layer
+        self.finetune_cost = self.logLayer.categorical_cross_entropy(self.y)
 
         # compute the gradients with respect to the model parameters
         # symbolic variable that points to the number of errors made on the
@@ -231,7 +233,7 @@ class DBN(object):
                 ]
             }
         )
-
+                
         valid_score_i = theano.function(
             [index],
             self.errors,
@@ -251,6 +253,23 @@ class DBN(object):
 
         return train_fn, valid_score
 
+    def predict_classes(self, x, batch_size=100):
+	    # Compile prediction classes function
+	    predict_classes_fn = theano.function(
+	    inputs=[self.x],
+	    outputs=self.logLayer.y_pred
+	    )        
+	    predicted_values = predict_classes_fn(x)
+	    return predicted_values
+                
+    def predict(self, x, batch_size=100):
+        # Compile prediction classes function
+        predict_fn = theano.function(
+        inputs=[self.x],
+        outputs=self.logLayer.p_y_given_x,
+        )        
+        predicted_values = predict_fn(x)
+        return predicted_values
 
 class DbnClassifier:
     def __init__(self, params):
@@ -261,7 +280,8 @@ class DbnClassifier:
         print('Pretraining epochs: %d Pretraining learning rate: %f'%(
                     params['pre_max_epochs'],params['plr']))
         print('Training epochs: %d Training learning rate: %f'%(
-                    params['max_epochs'],params['lr'])) 
+                    params['max_epochs'],params['lr']))
+    
     def build_model(self, params):
         hidden_layers = params['hidden_layers']
         input_dim = params['feat_size']
@@ -299,7 +319,7 @@ class DbnClassifier:
         #                            borrow=borrow),
         #                    'int32')
         
-        # Convert one-hot data to label to fit the DBN dataframe
+        # Convert one-hot data to integer label to fit the DBN dataframe
         def bin_to_int(mat):
             n = numpy.shape(mat)[0]
             m = numpy.shape(mat)[1]
@@ -309,6 +329,7 @@ class DbnClassifier:
                     if mat[i][j] == 1:
                         res[i] = j
             return res
+        
         train_set_x = theano.shared(value=train_x, name='train_set_x')
         train_set_y = T.cast(theano.shared(value=bin_to_int(train_y), 
                                             name='train_set_y'), 'int32')
@@ -410,9 +431,22 @@ class DbnClassifier:
         end_time = timeit.default_timer()
         print(
             (
-                'Optimization complete with best validation score of %f %%, '
+                'Optimization complete with best validation error of %f %%, '
                 'obtained at iteration %i, '
             ) % (best_validation_loss * 100., best_iter + 1)
         )
-        fname = path.join(out_dir, 'DBN_weights_'+params['out_file_append'] +'_{val_loss:.2f}.hdf5')    
+        
+        # save the best model's weights
+        fname = path.join(params['out_dir'], 'DBN_weights_'+params['out_file_append'] \
+                +'_{val_loss:.2f}.pkl')   
+        print('... Save the best model (including optimized weights): '
+                +fname.format(val_loss=best_validation_loss))
+        with open(fname.format(val_loss=best_validation_loss), 'w') as f:
+            cPickle.dump(self, f)
+        
+        print('Training is done')
+        print('----------------------------------')
         return fname, best_validation_loss
+        
+    def load_weights(self, weight_file):
+        self.model = cPickle.load(open(weight_file))

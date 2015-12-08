@@ -35,15 +35,15 @@ def main(params):
   
   train_x, train_y, val_x, val_y = dp.get_data_array(params['model_type'], ['train', 'devel'], cntxt=params['context'])
   fname, best_val_loss = modelObj.train_model(train_x, train_y, val_x, val_y, params)
-  if params['model_type']!='DBN':
-    checkpoint = {}
 
-    checkpoint['params'] = params
-    checkpoint['weights_file'] = fname.format(val_loss=best_val_loss)
-    filename = 'model_%s_%s_%s_%.2f.json' % (params['dataset'], params['model_type'], params['out_file_append'], best_val_loss)
-    filename = os.path.join(params['out_dir'],filename)
-    print 'Saving to File %s'%(filename)
-    json.dump(checkpoint, open(filename,'w'))
+  checkpoint = {}
+    
+  checkpoint['params'] = params
+  checkpoint['weights_file'] = fname.format(val_loss=best_val_loss)
+  filename = 'model_%s_%s_%s_%.2f.json' % (params['dataset'], params['model_type'], params['out_file_append'], best_val_loss)
+  filename = os.path.join(params['out_dir'],filename)
+  print 'Saving to File %s'%(filename)
+  json.dump(checkpoint, open(filename,'w'))
 
   ## Now let's build a gradient computation graph and rmsprop update mechanism
   ##grads = tensor.grad(cost, wrt=model.values())
